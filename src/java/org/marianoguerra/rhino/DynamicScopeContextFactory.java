@@ -4,7 +4,12 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 
 public class DynamicScopeContextFactory extends ContextFactory {
-	public static boolean useDynamicScope;
+	static boolean useDynamicScope;
+
+	public static boolean toggleDynamicScopeCreation(boolean enable) {
+		useDynamicScope = enable;
+		return useDynamicScope;
+	}
 
 	@Override
 	protected boolean hasFeature(Context cx, int featureIndex) {
