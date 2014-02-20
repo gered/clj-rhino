@@ -2,7 +2,7 @@
   (:refer-clojure :exclude (eval get get-in set!))
   (:import [org.mozilla.javascript Context UniqueTag NativeArray NativeObject
             BaseFunction]
-           [org.marianoguerra.rhino TimedContextFactory]))
+           [org.marianoguerra.rhino TimedContextFactory DynamicScopeContextFactory]))
 
 (defprotocol RhinoConvertible
   (-to-rhino [object scope ctx] "convert a value to a rhino compatible type"))
@@ -10,6 +10,11 @@
 (defprotocol ClojureConvertible
   (-from-rhino [object]
            "convert a value from rhino to a more clojure friendly representation"))
+
+(defn toggle-dynamic-scope! [enable]
+  "enables/disables creation of either 'normal' scopes or dynamic scopes. this
+   will only affect scopes that are created after calling this function."
+  (DynamicScopeContextFactory/toggleDynamicScopeCreation enable))
 
 (defn with-context [fun]
   "create a context call fun with it and safelly exit the context"
