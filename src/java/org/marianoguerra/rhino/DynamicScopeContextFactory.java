@@ -4,7 +4,9 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 
 public class DynamicScopeContextFactory extends ContextFactory {
-	static boolean useDynamicScope;
+	// default is to use non-dynamic scopes, which is to maintain compatibility with how clj-rhino worked
+	// before this addition
+	static boolean useDynamicScope = false;
 
 	public static boolean toggleDynamicScopeCreation(boolean enable) {
 		useDynamicScope = enable;

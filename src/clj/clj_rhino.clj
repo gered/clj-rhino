@@ -13,7 +13,8 @@
 
 (defn toggle-dynamic-scope! [enable]
   "enables/disables creation of either 'normal' scopes or dynamic scopes. this
-   will only affect scopes that are created after calling this function."
+   will only affect scopes that are created after calling this function. the
+   default setting is to create non-dynamic scopes."
   (DynamicScopeContextFactory/toggleDynamicScopeCreation enable))
 
 (defn with-context [fun]
