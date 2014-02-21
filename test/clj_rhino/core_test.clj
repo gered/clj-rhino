@@ -237,5 +237,60 @@
                  (is (= (js/eval scope "api.add(1, 2) + api.multiply(2, 3)") 9.0)) 
                  ))))
 
-)
+  (testing "non-dynamic scoping - function cannot access variable set in a nested scope"
+           (is (= (js/toggle-dynamic-scope! false) false))  ; this is the default, but just being explicit about it
+           (let [scope (js/new-safe-scope)]
 
+             (js/eval scope "function getFoo() { return (typeof foo == 'undefined' ? undefined : foo); }")
+
+             (is (= (type (js/eval scope "getFoo()")) org.mozilla.javascript.Undefined))
+
+             (let [nested-scope (js/new-scope nil scope)]
+               (js/set! nested-scope "foo" 1337)
+               (is (= (js/get nested-scope "foo") 1337))
+               (is (= (type (js/eval nested-scope "getFoo()")) org.mozilla.javascript.Undefined)))
+
+             (is (= (js/get scope "foo") org.mozilla.javascript.UniqueTag/NOT_FOUND))
+             (is (= (type (js/eval scope "getFoo()")) org.mozilla.javascript.Undefined))))
+
+  (testing "dynamic scoping - function can access variable set in a nested scope"
+           (is (= (js/toggle-dynamic-scope! true) true))
+           (let [scope (js/new-safe-scope)]
+
+             (js/eval scope "function getFoo() { return (typeof foo == 'undefined' ? undefined : foo); }")
+
+             (is (= (type (js/eval scope "getFoo()")) org.mozilla.javascript.Undefined))
+
+             (let [nested-scope (js/new-scope nil scope)]
+               (js/set! nested-scope "foo" 1337)
+               (is (= (js/get nested-scope "foo") 1337))
+               (is (= (js/eval nested-scope "getFoo()") 1337)))
+
+             (is (= (js/get scope "foo") org.mozilla.javascript.UniqueTag/NOT_FOUND))
+             (is (= (type (js/eval scope "getFoo()")) org.mozilla.javascript.Undefined))
+
+             ; reset back to default now that the test is done
+             (is (= (js/toggle-dynamic-scope! false) false))))
+
+  (testing "dynamic scoping - function can access variable set in root scope and changed in nested scope"
+           (is (= (js/toggle-dynamic-scope! true) true))
+           (let [scope (js/new-safe-scope)]
+
+             (js/eval scope "function getFoo() { return (typeof foo == 'undefined' ? undefined : foo); }")
+
+             (js/set! scope "foo" 42)
+             (is (= (js/get scope "foo") 42))
+             (is (= (js/eval scope "getFoo()") 42))
+
+             (let [nested-scope (js/new-scope nil scope)]
+               (js/set! nested-scope "foo" 1337)
+               (is (= (js/get nested-scope "foo") 1337))
+               (is (= (js/eval nested-scope "getFoo()") 1337)))
+
+             (is (= (js/get scope "foo") 42))
+             (is (= (js/eval scope "getFoo()") 42))
+
+             ; reset back to default now that the test is done
+             (is (= (js/toggle-dynamic-scope! false) false))))
+
+)
